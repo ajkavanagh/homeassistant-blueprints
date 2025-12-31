@@ -63,6 +63,13 @@ blueprint:
               entity:
                 domain: light
 
+        last_press_helper:
+          name: Last Press Timestamp Helper
+          description: An input_datetime helper to track the last button press time. See README for setup instructions.
+          selector:
+            entity:
+              domain: input_datetime
+
     control_section:
       name: Control Settings
       icon: mdi:tune
@@ -87,6 +94,16 @@ blueprint:
               max: 100
               unit_of_measurement: "%"
 
+        rotation_ignore_delay:
+          name: Rotation Ignore Delay
+          description: Ignore rotations for this many milliseconds after a button press
+          default: 500
+          selector:
+            number:
+              min: 0
+              max: 2000
+              unit_of_measurement: "ms"
+
 mode: single
 max_exceeded: silent
 
@@ -94,9 +111,8 @@ variables:
   target_lights: !input target_lights
   brightness_step: !input brightness_step
   brightness_min: !input brightness_min
-  # color_temp_step: !input color_temp_step
-  # hue_step: !input hue_step
-  # show_notifications: !input show_notifications
+  last_press_helper: !input last_press_helper
+  rotation_ignore_delay: !input rotation_ignore_delay
 
 triggers:
   # Single Press - Toggle
@@ -161,6 +177,11 @@ action:
         sequence:
           - action: light.toggle
             target: "{{ target_lights }}"
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: "{{ last_press_helper }}"
+            data:
+              datetime: "{{ now() }}"
 
       # Rotate Right or Rotate Left
       - conditions:
@@ -171,6 +192,9 @@ action:
               - condition: trigger
                 id: rotate_left
         sequence:
+          - condition: template
+            value_template: >
+              {{ (now().timestamp() - as_timestamp(states[last_press_helper].state)) * 1000 > rotation_ignore_delay }}
           - variables:
               # Expand all targets and filter for lights that are currently 'on'
               on_lights: >

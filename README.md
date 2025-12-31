@@ -18,7 +18,21 @@ NOTE: these are ZHA *only* at the moment, as that's all I use.  They could be up
 
 Control a smart bulb using an RD1-Pro.  The single click turns the bulb on an off, and the rotations either brighten or dim the bulb.  Note that unlike the [Candeo Blueprint](https://github.com/candeosmart/homeassistant-blueprints/blob/main/candeo-blueprint-zha-RD1P-3-light-control-toggle-dimming.yaml) this *only* controls the brightness; the colour and temperature are not affected.  I found them difficult to use.
 
-TODO: an additional feature is that the bright/dim control is ignored within a configurable time (in ms) of pressing the switch.  This is to decouple the dimming from pressing the switch as it's a little too sensitive.
+The blueprint includes a feature to ignore rotations for a configurable time (default 500ms) after pressing the switch button. This prevents accidental brightness changes when pressing the button.
+
+#### Setup Requirements
+
+Before using this blueprint, you need to create a helper entity in Home Assistant:
+
+1. Go to **Settings** → **Devices & Services** → **Helpers** tab
+2. Click **+ Create Helper** button
+3. Select **Date and/or time**
+4. Configure the helper:
+   - **Name**: Something like "RD1P Last Press Time" (you'll select this in the blueprint)
+   - **Type**: Select **Date and time** (not just date or just time)
+5. Click **Create**
+
+When configuring the blueprint automation, you'll select this helper entity in the "Last Press Timestamp Helper" field.
 
 #### ZHA
 
