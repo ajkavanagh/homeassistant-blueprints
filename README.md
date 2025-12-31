@@ -11,6 +11,7 @@ These blueprints are **heavily** inspired and sourced from the original [Candeo 
 ## Devices
 
 1. Candeo [RD1-Pro](#rd1-pro-c-zb-rd1p-decoupled-dimming-switch)
+2. SONOFF [SNZB-01P](#sonoff-snzb-01p-wireless-button)
 
 ## RD1-Pro (C-ZB-RD1P) Decoupled Dimming Switch
 
@@ -69,3 +70,29 @@ When configuring the blueprint automation, you'll select this helper entity in t
 For ZHA:
 
 [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/ajkavanagh/homeassistant-blueprints/blob/main/candeo-blueprint-zha-RD1P-scene-control-double-click.yaml)
+
+## SONOFF SNZB-01P Wireless Button
+
+1 Blueprint for the SONOFF SNZB-01P Wireless Button
+
+### Bedside Light Control
+
+Intelligent bedside light control using a wireless button. Perfect for controlling two individual bedside lights plus a room light group.
+
+**Features:**
+
+- **Single press**: Toggles "my light" on/off
+- **Double press**: Smart sync - if lights differ, matches "your light" to "my light"; if both are the same state, toggles both lights together
+- **Long press**: Turns off all lights in the "other lights" group/area
+
+This blueprint provides intuitive control for bedside scenarios:
+
+- Control your own light independently without disturbing your partner
+- Synchronize both lights with a double press, or toggle them together if they're already matched
+- Quick all-off for room lights with a long press
+
+No helper entities required - just select your three light targets (individual lights, groups, or areas) and you're ready to go!
+
+For ZHA:
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/ajkavanagh/homeassistant-blueprints/blob/main/sonoff-blueprint-zha-SNZB-01P-bedside-light-control.yaml)

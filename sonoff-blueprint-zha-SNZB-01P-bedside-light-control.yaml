@@ -1,0 +1,187 @@
+blueprint:
+  name: SONOFF SNZB-01P - Bedside Light Control
+  description: >
+    **Bedside light control for SONOFF SNZB-01P using ZHA**
+
+    Use a SONOFF SNZB-01P wireless button to control bedside lights with
+    intelligent coordination between "my light", "your light", and other room lights.
+
+    **Features:**
+
+    - **Single press**: Toggles "my light" on/off
+    - **Double press**: Smart sync - if lights differ, matches "your light" to "my light"; if both are the same state, toggles both lights together
+    - **Long press**: Turns off all lights in the "other lights" group/area
+
+    ⚡ **Advanced features:**
+
+    - 🏠 Works with individual lights, groups, or areas
+    - 🔄 Intelligent light state synchronization
+    - 🌙 Perfect for bedside tables with independent and shared control
+
+    **How It Works:**
+
+    - **Single Press**: Toggles your personal light (my light) on/off
+    - **Double Press**: Coordinates both bedside lights - syncs them if different, or toggles both if already matching
+    - **Long Press**: All-off button for the room's other lights
+
+    **Requirements:**
+
+    - SONOFF SNZB-01P wireless button
+    - ZHA integration with device actions available
+
+    **Version**: 1.0
+
+    **Compatible Devices**: SONOFF SNZB-01P
+
+  domain: automation
+  homeassistant:
+    min_version: 2024.6.0
+
+  input:
+    device_section:
+      name: Device & Light Selection
+      icon: mdi:devices
+      description: Select your SNZB-01P device and configure your lights
+      input:
+        remote_device:
+          name: SONOFF SNZB-01P Button
+          description: The SONOFF SNZB-01P wireless button device.
+          selector:
+            device:
+              filter:
+                - integration: zha
+                  manufacturer: SONOFF
+                  model: SNZB-01P
+
+        my_light:
+          name: My Light
+          description: Your personal bedside light (single press to toggle)
+          selector:
+            target:
+              entity:
+                domain: light
+
+        your_light:
+          name: Your Light
+          description: The other person's bedside light (controlled by double press)
+          selector:
+            target:
+              entity:
+                domain: light
+
+        other_lights:
+          name: Other Lights
+          description: Light group or area for other room lights (turned off by long press)
+          selector:
+            target:
+              entity:
+                domain: light
+
+mode: single
+max_exceeded: silent
+
+variables:
+  my_light: !input my_light
+  your_light: !input your_light
+  other_lights: !input other_lights
+
+triggers:
+  - trigger: device
+    device_id: !input remote_device
+    domain: zha
+    type: "remote_button_short_press"
+    subtype: "button"
+    id: single_press
+
+  - trigger: device
+    device_id: !input remote_device
+    domain: zha
+    type: "remote_button_double_press"
+    subtype: "button"
+    id: double_press
+
+  - trigger: device
+    device_id: !input remote_device
+    domain: zha
+    type: "remote_button_long_press"
+    subtype: "button"
+    id: long_press
+
+condition: []
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: single_press
+        sequence:
+          - action: light.toggle
+            target: "{{ my_light }}"
+
+      - conditions:
+          - condition: trigger
+            id: double_press
+        sequence:
+          - variables:
+              my_light_entities: >
+                {% set target = my_light %}
+                {% set entities = label_entities(target.label_id) if target.label_id is defined else [] %}
+                {% set entities = entities + area_entities(target.area_id) if target.area_id is defined else entities %}
+                {% set entities = entities + device_entities(target.device_id) if target.device_id is defined else entities %}
+                {% set entities = entities + [target.entity_id] if target.entity_id is defined else entities %}
+                {{ expand(entities) 
+                  | selectattr('domain', 'eq', 'light')
+                  | map(attribute='entity_id') | list }}
+              
+              your_light_entities: >
+                {% set target = your_light %}
+                {% set entities = label_entities(target.label_id) if target.label_id is defined else [] %}
+                {% set entities = entities + area_entities(target.area_id) if target.area_id is defined else entities %}
+                {% set entities = entities + device_entities(target.device_id) if target.device_id is defined else entities %}
+                {% set entities = entities + [target.entity_id] if target.entity_id is defined else entities %}
+                {{ expand(entities) 
+                  | selectattr('domain', 'eq', 'light')
+                  | map(attribute='entity_id') | list }}
+              
+              my_light_on: >
+                {{ expand(my_light_entities) 
+                  | selectattr('domain', 'eq', 'light')
+                  | selectattr('state', 'eq', 'on')
+                  | list | length > 0 }}
+              
+              your_light_on: >
+                {{ expand(your_light_entities) 
+                  | selectattr('domain', 'eq', 'light')
+                  | selectattr('state', 'eq', 'on')
+                  | list | length > 0 }}
+              
+              lights_differ: >
+                {{ my_light_on != your_light_on }}
+          
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ lights_differ }}"
+                sequence:
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ my_light_on }}"
+                        sequence:
+                          - action: light.turn_on
+                            target: "{{ your_light }}"
+                    default:
+                      - action: light.turn_off
+                        target: "{{ your_light }}"
+            default:
+              - action: light.toggle
+                target: "{{ my_light }}"
+              - action: light.toggle
+                target: "{{ your_light }}"
+
+      - conditions:
+          - condition: trigger
+            id: long_press
+        sequence:
+          - action: light.turn_off
+            target: "{{ other_lights }}"
