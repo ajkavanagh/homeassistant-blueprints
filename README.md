@@ -6,6 +6,8 @@ new/updated Blueprints.
 
 NOTE: these are ZHA *only* at the moment, as that's all I use.  They could be updated to use z2m.
 
+These blueprints are **heavily** inspired and sourced from the original [Candeo Blueprints](https://github.com/candeosmart/homeassistant-blueprints). Without those, these Blueprints probably wouldn't have happened.
+
 ## Devices
 
 1. Candeo [RD1-Pro](#rd1-pro-c-zb-rd1p-decoupled-dimming-switch)
