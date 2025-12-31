@@ -34,14 +34,36 @@ Before using this blueprint, you need to create a helper entity in Home Assistan
 
 When configuring the blueprint automation, you'll select this helper entity in the "Last Press Timestamp Helper" field.
 
-#### ZHA
+For ZHA:
 
 [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/ajkavanagh/homeassistant-blueprints/blob/main/candeo-blueprint-zha-RD1P-toggle-light-and-dimming.yaml)
 
-### Activate Scenes from your RD1-Pro - not available yet
+### Scene/Script Control with Double Press and Long Press
 
-Toggle lights, cycle scenes or scripts on double press, and adjust brightness with the knob.  Select up to six scenes or scripts  in the blueprint. A simple numeric helper chooses which slot runs next.
+Cycle through scenes or scripts on double press, and trigger a dedicated scene/script with long press. Select up to six scenes or scripts in the blueprint. A simple numeric helper chooses which slot runs next.
 
-This is modified from the original [Candeo](https://github.com/candeosmart/homeassistant-blueprints/blob/main/README.md#activate-your-scenes-or-scripts-from-your-wall-switch) one, in that *only* the double press event is used to switch between scenes.
+This is modified from the original [Candeo](https://github.com/candeosmart/homeassistant-blueprints/blob/main/README.md#activate-your-scenes-or-scripts-from-your-wall-switch) one, in that *only* the double press and long press events are used. Single press and rotations are ignored by this blueprint, allowing it to work alongside the Smart Bulb control blueprint.
+
+**Features:**
+
+- **Double press**: Activates the current scene/script from your helper selection, then moves to the next (1 → 2 → … → N → 1)
+- **Long press**: Runs a dedicated scene or script (independent of the helper)
+- **Single press & rotations**: Ignored (can be handled by another blueprint)
+
+#### Scene Setup Requirements
+
+Before using this blueprint, you need to create a helper entity in Home Assistant:
+
+1. Go to **Settings** → **Devices & Services** → **Helpers** tab
+2. Click **+ Create Helper** button
+3. Select **Dropdown**
+4. Configure the helper:
+   - **Name**: Something like "RD1P Scene Index" (you'll select this in the blueprint)
+   - **Options**: 1, 2, 3, 4, 5, 6 (set the range to match how many scenes/scripts you configure in the blueprint)
+5. Click **Create**
+
+When configuring the blueprint automation, you'll select this helper entity in the "Scene Cycle Helper" field.
+
+For ZHA:
 
 [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/ajkavanagh/homeassistant-blueprints/blob/main/candeo-blueprint-zha-RD1P-scene-control-double-click.yaml)
