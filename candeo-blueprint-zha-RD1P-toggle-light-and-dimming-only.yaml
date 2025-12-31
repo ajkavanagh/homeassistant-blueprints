@@ -1,0 +1,217 @@
+blueprint:
+  name: Candeo C-ZB-RD1P (REM or DPM mode) - Smart Bulb control on single click and dimmer
+  description: >
+    **Smart Bulb control for C-ZB-RD1P (Remote Mode or Dual Purpose Mode) using ZHA**
+
+    Use a Candeo RD1P in either REM mode or DPM mode to control smart bulbs - on/off using single click and brightness control using rotary knob.
+
+    **Features:**
+
+    - **Single press**: Toggles target lights on/off
+    - **Double press**: No action; leaves this for another blueprint for scene control.
+    - **Rotary control:**: adjusts light brightness only.
+
+      Does NOT affect colour or temperature; I found this to be unintuitive, and so only brightness is controlled.
+
+    ⚡ **Advanced features:**
+
+    - 🏠 Works with individual lights, groups, or areas
+    - 🔧 Customizable step sizes for precise control
+
+    **How It Works:**
+
+    - **Single Press**: Toggles the chosen lights on/off  
+    - **Rotate Knob**: Context-sensitive control based on current mode
+
+    **Requirements:**
+
+    - C-ZB-RD1P device must be in Remote Mode or Dual Purpose Mode
+    - Compatible smart lights with brightness support
+
+    **Version**: 1.0
+
+    **Compatible Devices**: Candeo C-ZB-RD1P (Remote Mode or Dual Purpose Mode)
+
+  domain: automation
+  homeassistant:
+    min_version: 2024.6.0
+
+  input:
+    device_section:
+      name: Device & Target Selection
+      icon: mdi:devices
+      description: Select your RD1P device, target lights, and mode helper
+      input:
+        remote_device:
+          name: C-ZB-RD1P Remote Device
+          description: The C-ZB-RD1P device in remote mode or dual purpose mode.
+          selector:
+            device:
+              filter:
+                - integration: zha
+                  manufacturer: Candeo
+                  model: C-ZB-RD1P-REM
+                - integration: zha
+                  manufacturer: Candeo
+                  model: C-ZB-RD1P-DPM
+
+        target_lights:
+          name: Target Lights
+          description: Light, light group, or area to control with the rotary remote
+          selector:
+            target:
+              entity:
+                domain: light
+
+    control_section:
+      name: Control Settings
+      icon: mdi:tune
+      description: Configure how much each rotation step changes your lights
+      input:
+        brightness_step:
+          name: Brightness Step
+          description: How much to change brightness per rotation step (1-50%)
+          default: 10
+          selector:
+            number:
+              min: 1
+              max: 50
+              unit_of_measurement: "%"
+        brightness_min:
+          name: Minimum Brightness
+          description: Minimum brightness to allow (1-100%)
+          default: 10
+          selector:
+            number:
+              min: 1
+              max: 100
+              unit_of_measurement: "%"
+
+mode: single
+max_exceeded: silent
+
+variables:
+  target_lights: !input target_lights
+  brightness_step: !input brightness_step
+  brightness_min: !input brightness_min
+  # color_temp_step: !input color_temp_step
+  # hue_step: !input hue_step
+  # show_notifications: !input show_notifications
+
+triggers:
+  # Single Press - Toggle
+  - trigger: device
+    device_id: !input remote_device
+    domain: zha
+    type: "remote_button_short_press"
+    subtype: "rotary_knob"
+    id: toggle_lights
+
+  # Double Press - Mode Cycle
+  # - trigger: device
+  #   device_id: !input remote_device
+  #   domain: zha
+  #   type: "remote_button_double_press"
+  #   subtype: "rotary_knob"
+  #   id: cycle_mode
+
+  # Rotation Right (treat started and rotating the same)
+  # TODO: this could be where to allow ignoring rotations within a time period from pressing the button.
+  - trigger: device
+    device_id: !input remote_device
+    domain: zha
+    type: "rotary_knob_started_rotating"
+    subtype: "right"
+    id: rotate_right
+  - trigger: device
+    device_id: !input remote_device
+    domain: zha
+    type: "rotary_knob_continued_rotating"
+    subtype: "right"
+    id: rotate_right
+
+  # Rotation Left (treat started and rotating the same)
+  # TODO: this could be where to allow ignoring rotations within a time period from pressing the button.
+  - trigger: device
+    device_id: !input remote_device
+    domain: zha
+    type: "rotary_knob_started_rotating"
+    subtype: "left"
+    id: rotate_left
+  - trigger: device
+    device_id: !input remote_device
+    domain: zha
+    type: "rotary_knob_continued_rotating"
+    subtype: "left"
+    id: rotate_left
+
+action:
+  - variables:
+      brightness_step_val: >
+        {% if trigger.id == 'rotate_right' %}
+          {{ brightness_step }}
+        {% elif trigger.id == 'rotate_left' %}
+          {{ -brightness_step }}
+        {% endif %}
+  - choose:
+      # Toggle Lights
+      - conditions:
+          - condition: trigger
+            id: toggle_lights
+        sequence:
+          - action: light.toggle
+            target: "{{ target_lights }}"
+
+      # Rotate Right or Rotate Left
+      - conditions:
+          - condition: or
+            conditions:
+              - condition: trigger
+                id: rotate_right
+              - condition: trigger
+                id: rotate_left
+        sequence:
+          - variables:
+              # Expand all targets and filter for lights that are currently 'on'
+              on_lights: >
+                {% set target = target_lights %}
+                {% set entities = label_entities(target) if target.label_id is defined else [] %}
+                {% set entities = entities + area_entities(target.area_id) if target.area_id is defined else entities %}
+                {% set entities = entities + device_entities(target.device_id) if target.device_id is defined else entities %}
+                {% set entities = entities + [target.entity_id] if target.entity_id is defined else entities %}
+
+                {{ expand(entities) 
+                  | selectattr('domain', 'eq', 'light')
+                  | selectattr('state', 'eq', 'on') 
+                  | map(attribute='entity_id') | list }}
+
+              # Set your minimum threshold (e.g., 10%)
+              min_raw: "{{ brightness_min * 2.55 }}"
+
+          # DIRECTIONAL LOGIC CHECK
+          - condition: template
+            value_template: >
+              {# No lights are on. Stop immediately. #}
+              {% if on_lights | length == 0 %}
+                {{ false }}
+
+              {# Increasing brightness. Proceed regardless of current level. #}
+              {% elif brightness_step_val > 0 %}
+                {{ true }}
+
+              {# Decreasing brightness. Only proceed if ALL lights are currently above the floor. #}
+              {% else %}
+                {{ expand(on_lights) 
+                  | map(attribute='attributes.brightness') 
+                  | map('int', 0) 
+                  | reject('gt', min_raw) 
+                  | list | length == 0 }}
+              {% endif %}
+
+          # EXECUTE SINGLE ACTION
+          - action: light.turn_on
+            continue_on_error: true
+            target:
+              entity_id: "{{ on_lights }}"
+            data:
+              brightness_step_pct: "{{ brightness_step_val }}"
