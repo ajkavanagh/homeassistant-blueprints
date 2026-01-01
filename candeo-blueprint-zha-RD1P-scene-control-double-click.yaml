@@ -184,6 +184,7 @@ action:
                     state: "1"
                 sequence:
                   - action: homeassistant.turn_on
+                    continue_on_error: true
                     target: !input scene_or_script_1
               - conditions:
                   - condition: state
@@ -191,6 +192,7 @@ action:
                     state: "2"
                 sequence:
                   - action: homeassistant.turn_on
+                    continue_on_error: true
                     target: !input scene_or_script_2
               - conditions:
                   - condition: state
@@ -198,6 +200,7 @@ action:
                     state: "3"
                 sequence:
                   - action: homeassistant.turn_on
+                    continue_on_error: true
                     target: !input scene_or_script_3
               - conditions:
                   - condition: state
@@ -205,6 +208,7 @@ action:
                     state: "4"
                 sequence:
                   - action: homeassistant.turn_on
+                    continue_on_error: true
                     target: !input scene_or_script_4
               - conditions:
                   - condition: state
@@ -212,6 +216,7 @@ action:
                     state: "5"
                 sequence:
                   - action: homeassistant.turn_on
+                    continue_on_error: true
                     target: !input scene_or_script_5
               - conditions:
                   - condition: state
@@ -219,6 +224,7 @@ action:
                     state: "6"
                 sequence:
                   - action: homeassistant.turn_on
+                    continue_on_error: true
                     target: !input scene_or_script_6
           - action: input_select.select_next
             target:
@@ -237,4 +243,5 @@ action:
                     value_template: "{{ long_press_action.entity_id is defined }}"
                 sequence:
                   - action: homeassistant.turn_on
+                    continue_on_error: true
                     target: "{{ long_press_action }}"

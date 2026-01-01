@@ -176,6 +176,7 @@ action:
             id: toggle_lights
         sequence:
           - action: light.toggle
+            continue_on_error: true
             target: "{{ target_lights }}"
           - action: input_datetime.set_datetime
             target:
