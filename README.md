@@ -19,7 +19,9 @@ These blueprints are **heavily** inspired and sourced from the original [Candeo 
 
 ### Smart Bulb control on single click and dimmer
 
-Control a smart bulb using an RD1-Pro.  The single click turns the bulb on an off, and the rotations either brighten or dim the bulb.  Note that unlike the [Candeo Blueprint](https://github.com/candeosmart/homeassistant-blueprints/blob/main/candeo-blueprint-zha-RD1P-3-light-control-toggle-dimming.yaml) this *only* controls the brightness; the colour and temperature are not affected.  I found them difficult to use.
+Control smart bulbs using an RD1-Pro. The single click uses smart toggle logic (if any light is on, turn all off; if all lights are off, turn all on), and the rotations either brighten or dim the bulb. Note that unlike the [Candeo Blueprint](https://github.com/candeosmart/homeassistant-blueprints/blob/main/candeo-blueprint-zha-RD1P-3-light-control-toggle-dimming.yaml) this *only* controls the brightness; the colour and temperature are not affected. I found them difficult to use.
+
+The smart toggle logic prevents the confusing situation where lights are in mixed states (some on, some off) and toggling would just swap their states. Instead, a single press will turn everything off if anything is on, or turn everything on if everything is off. This works seamlessly with individual lights, groups, or areas.
 
 The blueprint includes a feature to ignore rotations for a configurable time (default 500ms) after pressing the switch button. This prevents accidental brightness changes when pressing the button.
 

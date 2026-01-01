@@ -7,7 +7,7 @@ blueprint:
 
     **Features:**
 
-    - **Single press**: Toggles target lights on/off
+    - **Single press**: Smart toggle - if any light is on, turn all off; if all lights are off, turn all on.
     - **Double press**: No action; leaves this for another blueprint for scene control.
     - **Rotary control:**: adjusts light brightness only.
 
@@ -20,17 +20,17 @@ blueprint:
 
     **How It Works:**
 
-    - **Single Press**: Toggles the chosen lights on/off  
-    - **Rotate Knob**: Context-sensitive control based on current mode
+    - **Single Press**: Smart toggle - turns all lights off if any are on, otherwise turns all lights on.
+    - **Rotate Knob**: Context-sensitive control based on current mode.
 
     **Requirements:**
 
-    - C-ZB-RD1P device must be in Remote Mode or Dual Purpose Mode
-    - Compatible smart lights with brightness support
+    - C-ZB-RD1P device must be in Remote Mode or Dual Purpose Mode.
+    - Compatible smart lights with brightness support.
 
     **Version**: 1.0
 
-    **Compatible Devices**: Candeo C-ZB-RD1P (Remote Mode or Dual Purpose Mode)
+    **Compatible Devices**: Candeo C-ZB-RD1P (Remote Mode or Dual Purpose Mode).
 
   domain: automation
   homeassistant:
@@ -123,16 +123,7 @@ triggers:
     subtype: "rotary_knob"
     id: toggle_lights
 
-  # Double Press - Mode Cycle
-  # - trigger: device
-  #   device_id: !input remote_device
-  #   domain: zha
-  #   type: "remote_button_double_press"
-  #   subtype: "rotary_knob"
-  #   id: cycle_mode
-
   # Rotation Right (treat started and rotating the same)
-  # TODO: this could be where to allow ignoring rotations within a time period from pressing the button.
   - trigger: device
     device_id: !input remote_device
     domain: zha
@@ -147,7 +138,6 @@ triggers:
     id: rotate_right
 
   # Rotation Left (treat started and rotating the same)
-  # TODO: this could be where to allow ignoring rotations within a time period from pressing the button.
   - trigger: device
     device_id: !input remote_device
     domain: zha
@@ -163,6 +153,18 @@ triggers:
 
 action:
   - variables:
+      # Expand all targets to get individual light entities
+      all_target_lights: >
+        {% set target = target_lights %}
+        {% set entities = label_entities(target) if target.label_id is defined else [] %}
+        {% set entities = entities + area_entities(target.area_id) if target.area_id is defined else entities %}
+        {% set entities = entities + device_entities(target.device_id) if target.device_id is defined else entities %}
+        {% set entities = entities + [target.entity_id] if target.entity_id is defined else entities %}
+
+        {{ expand(entities) 
+          | selectattr('domain', 'eq', 'light')
+          | map(attribute='entity_id') | list }}
+
       brightness_step_val: >
         {% if trigger.id == 'rotate_right' %}
           {{ brightness_step }}
@@ -175,9 +177,28 @@ action:
           - condition: trigger
             id: toggle_lights
         sequence:
-          - action: light.toggle
-            continue_on_error: true
-            target: "{{ target_lights }}"
+          - variables:
+              # Check if any lights are on
+              any_light_on: >
+                {{ expand(all_target_lights) 
+                  | selectattr('domain', 'eq', 'light')
+                  | selectattr('state', 'eq', 'on') 
+                  | list | length > 0 }}
+
+          # If any light is on, turn all off; otherwise turn all on
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ any_light_on }}"
+                sequence:
+                  - action: light.turn_off
+                    continue_on_error: true
+                    target: "{{ target_lights }}"
+            default:
+              - action: light.turn_on
+                continue_on_error: true
+                target: "{{ target_lights }}"
+
           - action: input_datetime.set_datetime
             target:
               entity_id: "{{ last_press_helper }}"
@@ -197,15 +218,9 @@ action:
             value_template: >
               {{ (now().timestamp() - as_timestamp(states[last_press_helper].state)) * 1000 > rotation_ignore_delay }}
           - variables:
-              # Expand all targets and filter for lights that are currently 'on'
+              # Filter for lights that are currently 'on'
               on_lights: >
-                {% set target = target_lights %}
-                {% set entities = label_entities(target) if target.label_id is defined else [] %}
-                {% set entities = entities + area_entities(target.area_id) if target.area_id is defined else entities %}
-                {% set entities = entities + device_entities(target.device_id) if target.device_id is defined else entities %}
-                {% set entities = entities + [target.entity_id] if target.entity_id is defined else entities %}
-
-                {{ expand(entities) 
+                {{ expand(all_target_lights) 
                   | selectattr('domain', 'eq', 'light')
                   | selectattr('state', 'eq', 'on') 
                   | map(attribute='entity_id') | list }}
