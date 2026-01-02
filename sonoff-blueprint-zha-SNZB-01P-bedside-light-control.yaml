@@ -50,7 +50,7 @@ blueprint:
             device:
               filter:
                 - integration: zha
-                  manufacturer: SONOFF
+                  manufacturer: eWeLink
                   model: SNZB-01P
 
         my_light:
@@ -132,7 +132,7 @@ action:
                 {{ expand(entities) 
                   | selectattr('domain', 'eq', 'light')
                   | map(attribute='entity_id') | list }}
-              
+
               your_light_entities: >
                 {% set target = your_light %}
                 {% set entities = label_entities(target.label_id) if target.label_id is defined else [] %}
@@ -142,22 +142,22 @@ action:
                 {{ expand(entities) 
                   | selectattr('domain', 'eq', 'light')
                   | map(attribute='entity_id') | list }}
-              
+
               my_light_on: >
                 {{ expand(my_light_entities) 
                   | selectattr('domain', 'eq', 'light')
                   | selectattr('state', 'eq', 'on')
                   | list | length > 0 }}
-              
+
               your_light_on: >
                 {{ expand(your_light_entities) 
                   | selectattr('domain', 'eq', 'light')
                   | selectattr('state', 'eq', 'on')
                   | list | length > 0 }}
-              
+
               lights_differ: >
                 {{ my_light_on != your_light_on }}
-          
+
           - choose:
               - conditions:
                   - condition: template
