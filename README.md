@@ -41,7 +41,7 @@ When configuring the blueprint automation, you'll select this helper entity in t
 
 For ZHA:
 
-[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/ajkavanagh/homeassistant-blueprints/blob/main/candeo-blueprint-zha-RD1P-toggle-light-and-dimming.yaml)
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/ajkavanagh/homeassistant-blueprints/blob/main/candeo-blueprint-zha-RD1P-toggle-light-and-dimming-only.yaml)
 
 ### Scene/Script Control with Double Press and Long Press
 
