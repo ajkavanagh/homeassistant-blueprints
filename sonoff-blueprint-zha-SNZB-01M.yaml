@@ -155,8 +155,9 @@ condition:
 
 action:
   - variables:
-      endpoint: "{{ trigger.event.data.endpoint_id }}"
-      command: "{{ trigger.event.data.command }}"
+      # Use the 'default' filter or an 'if' check to handle manual runs
+      endpoint: "{{ trigger.event.data.endpoint_id if trigger.event is defined else 0 }}"
+      command: "{{ trigger.event.data.command if trigger.event is defined else 'none' }}"
 
   - choose:
       # -------- BUTTON 1 --------
