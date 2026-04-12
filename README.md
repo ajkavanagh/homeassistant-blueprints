@@ -98,3 +98,27 @@ No helper entities required - just select your three light targets (individual l
 For ZHA:
 
 [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/ajkavanagh/homeassistant-blueprints/blob/main/sonoff-blueprint-zha-SNZB-01P-bedside-light-control.yaml)
+
+## SONOFF SNZB-01M 4 Button
+
+ZHA blueprint for the Sonoff SNZB‑01M using zha_event. Supports 4 buttons
+(endpoints 1–4), each providing single, double, triple and long press actions
+— 16 actions in total.
+
+Uses the actual ZHA commands emitted by the SNZB‑01M
+(FC12 cluster). Requires either native ZHA support for this model or an
+appropriate quirk enabling correct FC12 event mapping.
+
+Physical button embossing:
+  • Top Left  → one dot
+  • Top Right → two dots
+  • Bottom Left → three dots
+  • Bottom Right → four dots
+
+Originally from: <https://github.com/3jam3/sonoff_projects/blob/0d2e49e698784c72534f8fea329805159d5f5edb/sonoff_snzb01m_zha.yaml>
+
+Contains fix from: <https://community.home-assistant.io/t/sonoff-snzb-01m-remote-zha-16-action-event-based-control/966723/11>
+
+This fix adds cluster_id to the template condition to match to the unit.
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/ajkavanagh/homeassistant-blueprints/blob/main/sonoff-blueprint-zha-SNZB-01M.yaml)

@@ -1,0 +1,200 @@
+blueprint:
+  name: Sonoff SNZB-01M (ZHA)
+  description: >
+    ZHA blueprint for the Sonoff SNZB‑01M using zha_event. Supports 4 buttons
+    (endpoints 1–4), each providing single, double, triple and long press actions
+    — 16 actions in total.
+
+    Uses the actual ZHA commands emitted by the SNZB‑01M
+    (FC12 cluster). Requires either native ZHA support for this model or an
+    appropriate quirk enabling correct FC12 event mapping.
+
+    Physical button embossing:
+      • Top Left  → one dot
+      • Top Right → two dots
+      • Bottom Left → three dots
+      • Bottom Right → four dots
+
+    Originally from: https://github.com/3jam3/sonoff_projects/blob/0d2e49e698784c72534f8fea329805159d5f5edb/sonoff_snzb01m_zha.yaml
+
+    Contains fix from: https://community.home-assistant.io/t/sonoff-snzb-01m-remote-zha-16-action-event-based-control/966723/11
+
+    This fix adds cluster_id to the template condition to match to the unit.
+
+  domain: automation
+  author: ajkavanagh
+
+  input:
+    remote:
+      name: Sonoff SNZB-01M Remote
+      description: Select the remote from the device list
+      selector:
+        device:
+          integration: zha
+          manufacturer: SONOFF
+          multiple: false
+
+    automation_mode:
+      name: Automation mode
+      description: >
+        Only one automation mode can be used for all buttons.
+        Automation modes documentation:
+        https://www.home-assistant.io/docs/automation/modes/
+      default: queued
+      selector:
+        select:
+          options:
+            - queued
+            - single
+            - restart
+            - parallel
+          sort: false
+          multiple: false
+          custom_value: false
+
+    # -------- BUTTON 1 --------
+    button1_single:
+      name: Button 1 – Single press
+      default: []
+      selector: { action: {} }
+
+    button1_double:
+      name: Button 1 – Double press
+      default: []
+      selector: { action: {} }
+
+    button1_triple:
+      name: Button 1 – Triple press
+      default: []
+      selector: { action: {} }
+
+    button1_long:
+      name: Button 1 – Long press
+      default: []
+      selector: { action: {} }
+
+    # -------- BUTTON 2 --------
+    button2_single:
+      name: Button 2 – Single press
+      default: []
+      selector: { action: {} }
+
+    button2_double:
+      name: Button 2 – Double press
+      default: []
+      selector: { action: {} }
+
+    button2_triple:
+      name: Button 2 – Triple press
+      default: []
+      selector: { action: {} }
+
+    button2_long:
+      name: Button 2 – Long press
+      default: []
+      selector: { action: {} }
+
+    # -------- BUTTON 3 --------
+    button3_single:
+      name: Button 3 – Single press
+      default: []
+      selector: { action: {} }
+
+    button3_double:
+      name: Button 3 – Double press
+      default: []
+      selector: { action: {} }
+
+    button3_triple:
+      name: Button 3 – Triple press
+      default: []
+      selector: { action: {} }
+
+    button3_long:
+      name: Button 3 – Long press
+      default: []
+      selector: { action: {} }
+
+    # -------- BUTTON 4 --------
+    button4_single:
+      name: Button 4 – Single press
+      default: []
+      selector: { action: {} }
+
+    button4_double:
+      name: Button 4 – Double press
+      default: []
+      selector: { action: {} }
+
+    button4_triple:
+      name: Button 4 – Triple press
+      default: []
+      selector: { action: {} }
+
+    button4_long:
+      name: Button 4 – Long press
+      default: []
+      selector: { action: {} }
+
+# ───────── AUTOMATION PART ─────────
+
+mode: !input automation_mode
+max_exceeded: silent
+
+variables:
+  remote_device_id: !input remote
+
+trigger:
+  - platform: event
+    event_type: zha_event
+
+condition:
+  - condition: template
+    value_template: >
+      {{ trigger.event.data.device_id == remote_device_id and trigger.event.data.cluster_id == 64530 }}
+
+action:
+  - variables:
+      endpoint: "{{ trigger.event.data.endpoint_id }}"
+      command: "{{ trigger.event.data.command }}"
+
+  - choose:
+      # -------- BUTTON 1 --------
+      - conditions: "{{ endpoint == 1 and command == 'remote_button_short_press' }}"
+        sequence: !input button1_single
+      - conditions: "{{ endpoint == 1 and command == 'remote_button_double_press' }}"
+        sequence: !input button1_double
+      - conditions: "{{ endpoint == 1 and command == 'remote_button_triple_press' }}"
+        sequence: !input button1_triple
+      - conditions: "{{ endpoint == 1 and command == 'remote_button_long_press' }}"
+        sequence: !input button1_long
+
+      # -------- BUTTON 2 --------
+      - conditions: "{{ endpoint == 2 and command == 'remote_button_short_press' }}"
+        sequence: !input button2_single
+      - conditions: "{{ endpoint == 2 and command == 'remote_button_double_press' }}"
+        sequence: !input button2_double
+      - conditions: "{{ endpoint == 2 and command == 'remote_button_triple_press' }}"
+        sequence: !input button2_triple
+      - conditions: "{{ endpoint == 2 and command == 'remote_button_long_press' }}"
+        sequence: !input button2_long
+
+      # -------- BUTTON 3 --------
+      - conditions: "{{ endpoint == 3 and command == 'remote_button_short_press' }}"
+        sequence: !input button3_single
+      - conditions: "{{ endpoint == 3 and command == 'remote_button_double_press' }}"
+        sequence: !input button3_double
+      - conditions: "{{ endpoint == 3 and command == 'remote_button_triple_press' }}"
+        sequence: !input button3_triple
+      - conditions: "{{ endpoint == 3 and command == 'remote_button_long_press' }}"
+        sequence: !input button3_long
+
+      # -------- BUTTON 4 --------
+      - conditions: "{{ endpoint == 4 and command == 'remote_button_short_press' }}"
+        sequence: !input button4_single
+      - conditions: "{{ endpoint == 4 and command == 'remote_button_double_press' }}"
+        sequence: !input button4_double
+      - conditions: "{{ endpoint == 4 and command == 'remote_button_triple_press' }}"
+        sequence: !input button4_triple
+      - conditions: "{{ endpoint == 4 and command == 'remote_button_long_press' }}"
+        sequence: !input button4_long
