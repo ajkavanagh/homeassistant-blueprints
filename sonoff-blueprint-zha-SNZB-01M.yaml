@@ -17,7 +17,10 @@ blueprint:
 
     Originally from: https://github.com/3jam3/sonoff_projects/blob/0d2e49e698784c72534f8fea329805159d5f5edb/sonoff_snzb01m_zha.yaml
 
-    Contains fix from: https://community.home-assistant.io/t/sonoff-snzb-01m-remote-zha-16-action-event-based-control/966723/11
+    Contains fixes from: https://community.home-assistant.io/t/sonoff-snzb-01m-remote-zha-16-action-event-based-control/966723/11
+
+    - Adding the cluster_id,
+    - renaming 'remote_button_%1_press' to '\1' (e.g. single, double, triple, long)
 
     This fix adds cluster_id to the template condition to match to the unit.
 
@@ -161,41 +164,41 @@ action:
 
   - choose:
       # -------- BUTTON 1 --------
-      - conditions: "{{ endpoint == 1 and command == 'remote_button_short_press' }}"
+      - conditions: "{{ endpoint == 1 and command == 'single' }}"
         sequence: !input button1_single
-      - conditions: "{{ endpoint == 1 and command == 'remote_button_double_press' }}"
+      - conditions: "{{ endpoint == 1 and command == 'double' }}"
         sequence: !input button1_double
-      - conditions: "{{ endpoint == 1 and command == 'remote_button_triple_press' }}"
+      - conditions: "{{ endpoint == 1 and command == 'triple' }}"
         sequence: !input button1_triple
-      - conditions: "{{ endpoint == 1 and command == 'remote_button_long_press' }}"
+      - conditions: "{{ endpoint == 1 and command == 'long' }}"
         sequence: !input button1_long
 
       # -------- BUTTON 2 --------
-      - conditions: "{{ endpoint == 2 and command == 'remote_button_short_press' }}"
+      - conditions: "{{ endpoint == 2 and command == 'single' }}"
         sequence: !input button2_single
-      - conditions: "{{ endpoint == 2 and command == 'remote_button_double_press' }}"
+      - conditions: "{{ endpoint == 2 and command == 'double' }}"
         sequence: !input button2_double
-      - conditions: "{{ endpoint == 2 and command == 'remote_button_triple_press' }}"
+      - conditions: "{{ endpoint == 2 and command == 'triple' }}"
         sequence: !input button2_triple
-      - conditions: "{{ endpoint == 2 and command == 'remote_button_long_press' }}"
+      - conditions: "{{ endpoint == 2 and command == 'long' }}"
         sequence: !input button2_long
 
       # -------- BUTTON 3 --------
-      - conditions: "{{ endpoint == 3 and command == 'remote_button_short_press' }}"
+      - conditions: "{{ endpoint == 3 and command == 'single' }}"
         sequence: !input button3_single
-      - conditions: "{{ endpoint == 3 and command == 'remote_button_double_press' }}"
+      - conditions: "{{ endpoint == 3 and command == 'double' }}"
         sequence: !input button3_double
-      - conditions: "{{ endpoint == 3 and command == 'remote_button_triple_press' }}"
+      - conditions: "{{ endpoint == 3 and command == 'triple' }}"
         sequence: !input button3_triple
-      - conditions: "{{ endpoint == 3 and command == 'remote_button_long_press' }}"
+      - conditions: "{{ endpoint == 3 and command == 'long' }}"
         sequence: !input button3_long
 
       # -------- BUTTON 4 --------
-      - conditions: "{{ endpoint == 4 and command == 'remote_button_short_press' }}"
+      - conditions: "{{ endpoint == 4 and command == 'single' }}"
         sequence: !input button4_single
-      - conditions: "{{ endpoint == 4 and command == 'remote_button_double_press' }}"
+      - conditions: "{{ endpoint == 4 and command == 'double' }}"
         sequence: !input button4_double
-      - conditions: "{{ endpoint == 4 and command == 'remote_button_triple_press' }}"
+      - conditions: "{{ endpoint == 4 and command == 'triple' }}"
         sequence: !input button4_triple
-      - conditions: "{{ endpoint == 4 and command == 'remote_button_long_press' }}"
+      - conditions: "{{ endpoint == 4 and command == 'long' }}"
         sequence: !input button4_long
